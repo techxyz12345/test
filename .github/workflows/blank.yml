@@ -1,23 +1,58 @@
-name: Run SRBMiner Multi Without Dockerfile
+name: Visit Links with Random Scroll and Delay
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  run-srbminer:
+  visit_links:
     runs-on: ubuntu-latest
     steps:
-      - name: Run SRBMiner Multi Container
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Visit each link in rounds
         run: |
-          docker run -d -p 8080:80 --name srbminer_container public.ecr.aws/lts/ubuntu:latest bash -c "\
-            apt update && \
-            apt -y install wget tar xz-utils && \
-            wget https://github.com/doktor83/SRBMiner-Multi/releases/download/2.4.5/SRBMiner-Multi-2-4-5-Linux.tar.xz && \
-            tar -xf SRBMiner-Multi-2-4-5-Linux.tar.xz && \
-            cd SRBMiner-Multi-2-4-5 && \
-            chmod +x SRBMiner-MULTI && \
-            ./SRBMiner-MULTI --disable-gpu --algorithm yespower --pool pool.viporlab.net:16004 --wallet v38ioPMpp4jmKPjssPbdGygKLK9hFkvyXk.Hopx1D pause --keepalive true"
-      - name: List Running Containers
-        run: docker ps
+          # Define your list of links (add as many as needed)
+          links=(
+  "https://roubauteezavoak.net/4/9003523"
+   "https://orderflow.tistory.com/"
+          )
+
+          # Set the number of rounds to visit all links
+          iterations=10
+
+          for ((round=1; round<=iterations; round++)); do
+            echo "Round $round of $iterations"
+            for link in "${links[@]}"; do
+              # Generate a random scroll value (e.g., between 100 and 1000)
+              scroll=$(shuf -i 100-1000 -n 1)
+              # Generate a random delay between 5 and 15 seconds
+              delay=$(shuf -i 5-15 -n 1)
+
+              # Build the JSON payload.
+              # It includes the link and the random scroll value within the context.
+              payload=$(jq -n \
+                --arg url "$link" \
+                --arg scroll "$scroll" \
+                '{
+                  source: "universal",
+                  url: $url,
+                  geo_location: "United States",
+                  user_agent_type: "desktop_chrome",
+                  render: "html",
+                  context: [
+                    { key: "http_method", value: "get" },
+                    { key: "scroll", value: $scroll }
+                  ]
+                }')
+
+              echo "Visiting $link with scroll value: $scroll and waiting $delay seconds before next request."
+              curl --user "Phoenixharrington7_f0fen:=Phoenixharrington7" \
+                'https://realtime.oxylabs.io/v1/queries' \
+                -H "Content-Type: application/json" \
+                -d "$payload"
+              echo ""
+              sleep "$delay"
+            done
+          done
+        shell: bash
