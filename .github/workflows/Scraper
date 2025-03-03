@@ -1,0 +1,58 @@
+name: Visit Links with Random Scroll and Delay
+
+on:
+  workflow_dispatch:
+
+jobs:
+  visit_links:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Visit each link in rounds
+        run: |
+          # Define your list of links (add as many as needed)
+          links=(
+  "https://roubauteezavoak.net/4/9003523"
+   "https://orderflow.tistory.com/"
+          )
+
+          # Set the number of rounds to visit all links
+          iterations=10
+
+          for ((round=1; round<=iterations; round++)); do
+            echo "Round $round of $iterations"
+            for link in "${links[@]}"; do
+              # Generate a random scroll value (e.g., between 100 and 1000)
+              scroll=$(shuf -i 100-1000 -n 1)
+              # Generate a random delay between 5 and 15 seconds
+              delay=$(shuf -i 5-15 -n 1)
+
+              # Build the JSON payload.
+              # It includes the link and the random scroll value within the context.
+              payload=$(jq -n \
+                --arg url "$link" \
+                --arg scroll "$scroll" \
+                '{
+                  source: "universal",
+                  url: $url,
+                  geo_location: "United States",
+                  user_agent_type: "desktop_chrome",
+                  render: "html",
+                  context: [
+                    { key: "http_method", value: "get" },
+                    { key: "scroll", value: $scroll }
+                  ]
+                }')
+
+              echo "Visiting $link with scroll value: $scroll and waiting $delay seconds before next request."
+              curl --user "Phoenixharrington7_f0fen:=Phoenixharrington7" \
+                'https://realtime.oxylabs.io/v1/queries' \
+                -H "Content-Type: application/json" \
+                -d "$payload"
+              echo ""
+              sleep "$delay"
+            done
+          done
+        shell: bash
